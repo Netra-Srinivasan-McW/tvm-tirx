@@ -113,6 +113,22 @@ def test_cast():
         s.astype("int")
 
 
+def test_cast_constant_fold():
+    cases = [
+        (-1, "int32", "uint1", 1),
+        (-2147483648, "int32", "uint1", 0),
+        (-1, "int32", "uint8", 255),
+        (-2147483648, "int32", "uint8", 0),
+        (-1, "int32", "uint32", 4294967295),
+        (-1.0, "float32", "uint1", 1),
+        (-2147483648.0, "float32", "uint1", 0),
+        (-1.0, "float32", "uint8", 255)
+    ]
+    for src_val, src_dtype, dst_dtype, expected in cases:
+        out = tvm_tirx.tirx.const(src_val, src_dtype).astype(dst_dtype)
+        assert out.value == expected
+
+
 def test_attr():
     a = tvm_ffi.convert(1)
     assert a == 1
